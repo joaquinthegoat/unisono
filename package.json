@@ -1,0 +1,61 @@
+{
+  "name": "unisono",
+  "productName": "Unisono",
+  "version": "0.1.0",
+  "description": "Spotify, Apple Music and YouTube Music in one desktop window, with shared controls.",
+  "main": "src/main.js",
+  "author": "Joaquín Rodríguez",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "check": "node --check src/main.js && node --check src/preload-service.js && node --check src/preload-ui.js && node --check src/ui/renderer.js && node --check build/vmp-sign.js",
+    "dist": "electron-builder --win --x64 --publish never",
+    "release": "electron-builder --win --x64 --publish always"
+  },
+  "devDependencies": {
+    "electron": "https://github.com/castlabs/electron-releases#v44.9.3+wvcus",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "com.unisono.player",
+    "productName": "Unisono",
+    "electronDist": "node_modules/electron/dist",
+    "afterPack": "build/vmp-sign.js",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Unisono"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "releaseType": "release"
+      }
+    ],
+    "electronVersion": "44.9.3"
+  }
+}

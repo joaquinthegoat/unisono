@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; img-src 'self' https: data:; style-src 'self'; script-src 'self'">
+  <title>Unisono</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="bar">
+    <div class="brand" aria-label="Unisono">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-name">Unisono</span>
+    </div>
+
+    <nav class="tabs" id="tabs" role="tablist" aria-label="Music services"></nav>
+
+    <div class="nav-buttons">
+      <button class="icon-btn" id="back" title="Back (Alt+Left)" aria-label="Back">
+        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" /></svg>
+      </button>
+      <button class="icon-btn" id="reload" title="Reload (Ctrl+R)" aria-label="Reload">
+        <svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" /></svg>
+      </button>
+    </div>
+
+    <div class="spacer"></div>
+
+    <section class="now" id="now" aria-live="polite">
+      <div class="art" id="art"></div>
+      <div class="meta">
+        <div class="title" id="title">Nothing playing</div>
+        <div class="sub"><span class="badge" id="badge"></span><span id="artist"></span></div>
+      </div>
+    </section>
+
+    <div class="controls">
+      <button class="icon-btn" id="prev" title="Previous" aria-label="Previous">
+        <svg viewBox="0 0 24 24"><path class="fill" d="M7 6h2v12H7zM20 6v12l-9-6z" /></svg>
+      </button>
+      <button class="play-btn" id="toggle" title="Play / Pause" aria-label="Play or pause">
+        <svg viewBox="0 0 24 24" id="icon-play"><path class="fill" d="M8 5v14l11-7z" /></svg>
+        <svg viewBox="0 0 24 24" id="icon-pause" hidden><path class="fill" d="M7 5h4v14H7zM13 5h4v14h-4z" /></svg>
+      </button>
+      <button class="icon-btn" id="next" title="Next" aria-label="Next">
+        <svg viewBox="0 0 24 24"><path class="fill" d="M15 6h2v12h-2zM4 6v12l9-6z" /></svg>
+      </button>
+    </div>
+
+    <div class="window-controls-space"></div>
+  </header>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

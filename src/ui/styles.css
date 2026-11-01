@@ -1,0 +1,120 @@
+:root {
+  --bg: #0e0f13;
+  --bar: #0e0f13;
+  --raised: #1a1c23;
+  --hover: #23262f;
+  --line: #262933;
+  --text: #ececf1;
+  --muted: #9a9cab;
+  --accent: #b9a8ff;
+  --bar-h: 56px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font: 13px/1.3 "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  overflow: hidden;
+  user-select: none;
+}
+
+.bar {
+  height: var(--bar-h);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-left: 16px;
+  background: var(--bar);
+  border-bottom: 1px solid var(--line);
+  -webkit-app-region: drag; /* lets you drag the window by the bar */
+}
+
+.bar button, .tabs, .now { -webkit-app-region: no-drag; }
+
+/* Brand */
+.brand { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.brand-mark {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: conic-gradient(#1DB954 0 33%, #FA2D48 0 66%, #B9A8FF 0);
+  box-shadow: inset 0 0 0 4px var(--bar);
+}
+.brand-name { font-weight: 600; letter-spacing: 0.2px; }
+
+/* Tabs */
+.tabs { display: flex; gap: 4px; background: var(--raised); padding: 3px; border-radius: 10px; }
+.tab {
+  display: flex; align-items: center; gap: 7px;
+  border: 0; border-radius: 8px;
+  padding: 7px 12px;
+  background: transparent; color: var(--muted);
+  font: inherit; cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.tab:hover { background: var(--hover); color: var(--text); }
+.tab[aria-selected="true"] { background: var(--hover); color: var(--text); }
+.tab .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--svc); }
+.tab .key { color: #5d6070; font-size: 11px; }
+
+/* Little equaliser shown on a tab that is playing */
+.eq { display: none; gap: 2px; align-items: flex-end; height: 10px; }
+.tab.playing .eq { display: inline-flex; }
+.tab.playing .key { display: none; }
+.eq i { width: 2px; background: var(--svc); animation: eq 0.9s ease-in-out infinite; }
+.eq i:nth-child(2) { animation-delay: -0.3s; }
+.eq i:nth-child(3) { animation-delay: -0.6s; }
+@keyframes eq { 0%, 100% { height: 3px; } 50% { height: 10px; } }
+
+/* Buttons */
+.nav-buttons, .controls { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+.icon-btn, .play-btn {
+  display: grid; place-items: center;
+  border: 0; cursor: pointer; color: var(--text); background: transparent;
+}
+.icon-btn { width: 32px; height: 32px; border-radius: 8px; }
+.icon-btn:hover { background: var(--hover); }
+.nav-buttons .icon-btn { color: var(--muted); }
+.play-btn {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--text); color: var(--bg); margin: 0 4px;
+}
+.play-btn:hover { transform: scale(1.05); }
+svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2;
+      stroke-linecap: round; stroke-linejoin: round; }
+svg .fill { fill: currentColor; stroke: none; }
+.play-btn svg { width: 20px; height: 20px; }
+
+.spacer { flex: 1; }
+
+/* Now playing */
+.now { display: flex; align-items: center; gap: 10px; min-width: 0; max-width: 340px; }
+.art {
+  width: 38px; height: 38px; border-radius: 6px; flex-shrink: 0;
+  background: var(--raised) center / cover no-repeat;
+}
+.meta { min-width: 0; }
+.title, .sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.title { font-weight: 600; }
+.sub { color: var(--muted); font-size: 12px; display: flex; gap: 6px; align-items: center; }
+.badge {
+  font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 4px;
+  background: color-mix(in srgb, var(--svc, #555) 25%, transparent);
+  color: var(--svc, var(--muted));
+}
+.badge:empty { display: none; }
+.now.idle .title { color: var(--muted); font-weight: 400; }
+
+/* Space reserved for Windows' minimise / maximise / close buttons */
+.window-controls-space {
+  flex-shrink: 0;
+  width: calc(100vw - env(titlebar-area-width, calc(100vw - 140px)));
+  min-width: 8px;
+}
+
+@media (max-width: 1040px) {
+  .brand-name, .tab .key { display: none; }
+  .now { max-width: 200px; }
+}
