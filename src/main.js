@@ -6,6 +6,7 @@ const {
   components,
   BrowserWindow,
   WebContentsView,
+  dialog,
   Menu,
   Tray,
   globalShortcut,
@@ -47,13 +48,23 @@ const POPUP_HOSTS = [
 app.commandLine.appendSwitch('disable-features', 'HardwareMediaKeyHandling');
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
-// A plain Chrome user agent: some sites refuse to load in "unsupported" browsers.
+// Two identities:
+//  • USER_AGENT — looks like plain Chrome. Used for the music sites, some of which
+//    refuse to load in "unsupported" browsers.
+//  • NATIVE_UA — Electron's own, honest user agent (includes "Unisono/x.y.z" and
+//    "Electron/x"). Used ONLY on Google's sign-in pages: Google rejects apps that
+//    disguise themselves as Chrome, but accepts ones that say what they are.
+const NATIVE_UA = app.userAgentFallback;
 const CHROME_VERSION = process.versions.chrome;
-const CHROME_MAJOR = CHROME_VERSION.split('.')[0];
 const USER_AGENT =
   `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) ` +
   `Chrome/${CHROME_VERSION} Safari/537.36`;
 app.userAgentFallback = USER_AGENT;
+
+const GOOGLE_SIGNIN_HOSTS = ['accounts.google.com', 'accounts.youtube.com'];
+const isGoogleSignIn = (url) => {
+  try { return GOOGLE_SIGNIN_HOSTS.includes(new URL(url).hostname); } catch (_) { return false; }
+};
 
 // ---------------------------------------------------------------------------
 // Settings (window size, last tab, preferences), stored as JSON in the user data folder.
@@ -378,6 +389,9 @@ function buildMenu() {
         { label: 'Pause other services when one plays', type: 'checkbox', checked: settings.autoPauseOthers,
           click: (item) => { settings.autoPauseOthers = item.checked; saveSettings(); sendState(); } },
         { type: 'separator' },
+        { label: `Version ${app.getVersion()}`, enabled: false },
+        { label: 'Check for updates…', click: () => checkForUpdates(true) },
+        { type: 'separator' },
         { label: 'Quit', accelerator: 'Ctrl+Q', click: () => { quitting = true; app.quit(); } }
       ]
     },
@@ -406,25 +420,103 @@ function buildMenu() {
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
+// ---------------------------------------------------------------------------
+// Automatic updates from your GitHub Releases page (like Spotify or Discord do).
+// The new version downloads in the background; you're asked before restarting.
+
+let updater = null;
+let updateReady = false;
+
+function getUpdater() {
+  if (updater) return updater;
+  updater = require('electron-updater').autoUpdater;
+  updater.autoDownload = true;
+  updater.autoInstallOnAppQuit = true; // if you pick "Later", it installs next time you quit
+
+  updater.on('update-downloaded', async (info) => {
+    if (updateReady) return;
+    updateReady = true;
+    const { response } = await dialog.showMessageBox(win, {
+      type: 'info',
+      title: 'Update ready',
+      message: `Unisono ${info.version} is ready to install.`,
+      detail: 'Restart now to update, or it will install the next time you quit Unisono.',
+      buttons: ['Restart now', 'Later'],
+      defaultId: 0,
+      cancelId: 1
+    });
+    if (response === 0) {
+      quitting = true;
+      updater.quitAndInstall(true, true);
+    }
+  });
+  return updater;
+}
+
+async function checkForUpdates(userAsked) {
+  if (!app.isPackaged) {
+    if (userAsked) {
+      dialog.showMessageBox(win, {
+        message: 'Updates only work in the installed app.',
+        detail: 'You are running the development version (npm run dev).'
+      });
+    }
+    return;
+  }
+  try {
+    const result = await getUpdater().checkForUpdates();
+    const latest = result && result.updateInfo && result.updateInfo.version;
+    if (userAsked && (!latest || latest === app.getVersion())) {
+      dialog.showMessageBox(win, { message: `You're up to date (version ${app.getVersion()}).` });
+    } else if (userAsked) {
+      dialog.showMessageBox(win, {
+        message: `Downloading Unisono ${latest}…`,
+        detail: "You'll be asked to restart when it's ready."
+      });
+    }
+  } catch (err) {
+    console.warn('Update check failed:', err.message);
+    if (userAsked) {
+      dialog.showMessageBox(win, {
+        type: 'warning',
+        message: "Couldn't check for updates.",
+        detail:
+          'Make sure you are online and that the GitHub repository is public ' +
+          '(the updater cannot see releases in a private repository).\n\n' + err.message
+      });
+    }
+  }
+}
+
 function goBack() {
   const nav = views[settings.activeTab].webContents.navigationHistory;
   if (nav && nav.canGoBack()) nav.goBack();
 }
 
-// Make Google's sign-in page see a regular Chrome browser (it blocks "embedded" browsers).
-function patchClientHints() {
-  const brands =
-    `"Chromium";v="${CHROME_MAJOR}", "Google Chrome";v="${CHROME_MAJOR}", "Not.A/Brand";v="99"`;
+// Google sign-in: present Unisono's real identity on Google's account pages.
+// 1) Every request to those hosts carries the native user agent header…
+function setupGoogleSignIn() {
   session.fromPartition(PARTITION).webRequest.onBeforeSendHeaders(
-    { urls: ['https://*.google.com/*', 'https://*.youtube.com/*'] },
+    { urls: GOOGLE_SIGNIN_HOSTS.map((h) => `https://${h}/*`) },
     (details, callback) => {
       const headers = details.requestHeaders;
       for (const key of Object.keys(headers)) {
-        if (key.toLowerCase() === 'sec-ch-ua') headers[key] = brands;
+        if (key.toLowerCase() === 'user-agent') delete headers[key];
       }
+      headers['User-Agent'] = NATIVE_UA;
       callback({ requestHeaders: headers });
     }
   );
+
+  // 2) …and the page's own JavaScript sees the same identity, so nothing contradicts.
+  //    Applies to the service views and to sign-in pop-ups alike.
+  app.on('web-contents-created', (_e, wc) => {
+    wc.on('did-start-navigation', (details) => {
+      if (!details.isMainFrame) return;
+      const wanted = isGoogleSignIn(details.url) ? NATIVE_UA : USER_AGENT;
+      if (wc.getUserAgent() !== wanted) wc.setUserAgent(wanted);
+    });
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -445,6 +537,8 @@ if (!app.requestSingleInstanceLock()) {
   app.on('second-instance', showWindow);
 
   app.whenReady().then(async () => {
+    // Same ID as "appId" in package.json, so the window and the pinned taskbar icon are one icon.
+    app.setAppUserModelId('com.unisono.player');
     loadSettings();
 
     // Castlabs Electron: wait until the Widevine DRM module is installed,
@@ -461,12 +555,18 @@ if (!app.requestSingleInstanceLock()) {
     }
 
     session.fromPartition(PARTITION).setUserAgent(USER_AGENT);
-    patchClientHints();
+    setupGoogleSignIn();
     buildMenu();
     createWindow();
     createTray();
     registerMediaKeys();
     setInterval(pollState, 1000);
+
+    // Installed copies check GitHub Releases for a newer version at startup and every 6 hours.
+    if (app.isPackaged) {
+      setTimeout(() => checkForUpdates(false), 10 * 1000);
+      setInterval(() => checkForUpdates(false), 6 * 60 * 60 * 1000);
+    }
   });
 
   app.on('before-quit', () => { quitting = true; });
