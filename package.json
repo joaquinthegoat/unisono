@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Spotify, Apple Music and YouTube Music in one desktop window, with shared controls.",
   "main": "src/main.js",
-  "author": "Joaquín Rodríguez",
+  "author": "TheGoat Inc.",
   "license": "MIT",
   "private": true,
   "scripts": {
