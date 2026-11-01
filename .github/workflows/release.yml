@@ -68,7 +68,23 @@ jobs:
             echo "::error::Version must look like 1.2.3 (got '$V')"; exit 1
           fi
           npm version "$V" --no-git-tag-version --allow-same-version
+          echo "APP_VERSION=$V" >> "$GITHUB_ENV"
           echo "Building Unisono $V"
+
+      # GitHub only publishes a release for a tag that already exists.
+      # When started from the website there's no tag yet, so create it here.
+      - name: Create the version tag
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+          TAG="v$APP_VERSION"
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null; then
+            echo "Tag $TAG already exists, reusing it."
+          else
+            git tag "$TAG"
+            git push origin "$TAG"
+            echo "Created tag $TAG"
+          fi
 
       - name: Build, VMP-sign and publish installer
         env:
