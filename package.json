@@ -41,14 +41,19 @@
           ]
         }
       ],
-      "icon": "assets/icon.ico"
+      "icon": "assets/icon.ico",
+      "artifactName": "Unisono-Setup.${ext}"
     },
     "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
+      "oneClick": true,
+      "perMachine": false,
+      "runAfterFinish": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Unisono"
+      "shortcutName": "Unisono",
+      "uninstallDisplayName": "Unisono",
+      "deleteAppDataOnUninstall": false,
+      "artifactName": "Unisono-Setup.${ext}"
     },
     "publish": [
       {
@@ -57,5 +62,8 @@
       }
     ],
     "electronVersion": "44.9.3"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.11"
   }
 }

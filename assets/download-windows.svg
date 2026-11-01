@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="76" viewBox="0 0 420 76" role="img" aria-label="Download for Windows">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1c1e27"/>
+      <stop offset="1" stop-color="#0e0f13"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#1DB954"/>
+      <stop offset="0.5" stop-color="#FA2D48"/>
+      <stop offset="1" stop-color="#B9A8FF"/>
+    </linearGradient>
+  </defs>
+  <rect x="1.5" y="1.5" width="417" height="73" rx="20" fill="url(#bg)" stroke="url(#ring)" stroke-width="3"/>
+  <!-- Windows logo -->
+  <g transform="translate(34 22)" fill="#ececf1">
+    <rect x="0" y="0" width="14.5" height="14.5" rx="1.5"/>
+    <rect x="17.5" y="0" width="14.5" height="14.5" rx="1.5"/>
+    <rect x="0" y="17.5" width="14.5" height="14.5" rx="1.5"/>
+    <rect x="17.5" y="17.5" width="14.5" height="14.5" rx="1.5"/>
+  </g>
+  <text x="88" y="35" fill="#ececf1" font-family="Segoe UI, -apple-system, Helvetica, Arial, sans-serif" font-size="22" font-weight="700">Download for Windows</text>
+  <text x="88" y="56" fill="#9a9cab" font-family="Segoe UI, -apple-system, Helvetica, Arial, sans-serif" font-size="14">Free · Windows 10 and 11 · 64-bit</text>
+  <!-- arrow -->
+  <g transform="translate(384 38)" fill="none" stroke="#ececf1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M0 -12 V8 M-8 0 L0 8 L8 0"/>
+  </g>
+</svg>
