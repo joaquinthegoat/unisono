@@ -8,6 +8,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
+    "postinstall": "install-electron",
     "start": "electron .",
     "dev": "electron . --dev",
     "check": "node --check src/main.js && node --check src/preload-service.js && node --check src/preload-ui.js && node --check src/ui/renderer.js && node --check build/vmp-sign.js",
